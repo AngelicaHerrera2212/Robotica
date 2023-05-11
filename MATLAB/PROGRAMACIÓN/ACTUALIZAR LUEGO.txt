@@ -1,0 +1,9 @@
+
+// LOSE SOUND PLAY (0)
+// FASE 5 BORRADA PLAY (6) - SE PUEDE USAR PARA EL REINICIO
+// NO EXISTE EL NUMERO PLAY (7)
+// SE LEYO EL NUMERO PLAY (8)
+
+else if (mensaje == "LOSE"){BUZZ.play(0); cambio = GO::to_1; BINGO::machine();}
+else if (mensaje == "NEXIS"){BUZZ.play(7);}
+else if (mensaje == "LEIDO"){BUZZ.play(8);}

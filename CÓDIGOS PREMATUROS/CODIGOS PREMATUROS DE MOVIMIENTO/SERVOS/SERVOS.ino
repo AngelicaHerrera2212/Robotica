@@ -1,0 +1,38 @@
+#include <Servo.h>
+
+// BASE || HOMBRO || CODO || PINZA
+int S1 = 10, S2 = 11, S3 = 6, S4 = 9;
+
+Servo BASE;
+Servo HOMBRO;
+Servo CODO;
+Servo PINZA;
+
+
+void setup() {
+
+
+// ATTACH Y LIMITES
+
+// 0 ---> 180
+//BASE.attach(S1);
+//HOMBRO.attach(S2);
+//CODO.attach(S3);
+
+// 0 ---> 110
+PINZA.attach(S4);
+
+// PRIMER ESCRITURA Y FUNCIONAMIENTO
+
+PINZA.write(20); // CIERRA EN 100 ABRE CON 0  - limites 20 y 65
+//CODO.write(80); //  FUNCIONA HASTA 270 PERO LA LIBRERIA ES DE 180 POR LO QUE 60 ES SU 90 -- CERO ES DELANTE Y 90 ES DETRAS POR LO QUE FUNCIONA DETRAS HACIA ADELANTE
+//HOMBRO.write(110); // FUNCIONA NORMAL -- 180 ES DETRAS Y 0 ES DELANTE POR LO QUE VA DETRAS HACIA DELANTE
+//BASE.write(0);  //  FUNCIONA HASTA 270 PERO LA LIBRERIA ES DE 180 POR LO QUE 60 ES SU 90
+
+
+Serial.begin(9600);
+}
+
+void loop() {
+
+}
