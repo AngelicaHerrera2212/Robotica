@@ -78,6 +78,10 @@ class SerialPortConnection:
         else:
             print('There is no open communication.')
             print(Message)
+    
+    def Close_Port_DestroyWindow(self):
+        self.close_port()
+        HMI.destroy()
 
     @staticmethod
     def get_available_ports():
@@ -175,4 +179,5 @@ if __name__ == '__main__':
     #Students
     Widgets.Create_Label('Angélica Herrera - 1093629\nWisleiny Lara - 1090359',875,565,'white',('Cambria',12,'bold'),'right','se')
 
+    HMI.protocol("WM_DELETE_WINDOW",serial_connection.Close_Port_DestroyWindow)
     HMI.mainloop()
