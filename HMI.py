@@ -1,33 +1,89 @@
 import tkinter as tk
 from tkinter import ttk
 import serial
+import serial.tools.list_ports
+
 
 class GUI():
     def __init__(self,Window):
         self.Window = Window
+        self.parent_bg = self.Window.cget('bg')
+        self.canvas = tk.Canvas(self.Window)
 
-    def Create_Label(self,Message,X_Pos,Y_Pos,Color = 'black', Font = ('Arial',25)):
-        tk.Label(self.Window, text=Message, fg= Color , font= Font).place(x=X_Pos, y=Y_Pos ,anchor='nw')
+    def Create_Label(self,Message,X_Pos,Y_Pos,Color = 'black', Font = ('Arial',25),JustifyText='center',AnchorText='nw'):
+        tk.Label(self.Window, text=Message, fg= Color , bg=self.parent_bg , font= Font,justify=JustifyText).place(x=X_Pos, y=Y_Pos ,anchor=AnchorText)
 
-    def Create_ComboBox(self,Values,X_Pos,Y_Pos):
-        List = ttk.Combobox(self.Window, values=B_Values,width=10)
-        List.set(Values[0])
+    def Create_ComboBox(self,ValuesList,X_Pos,Y_Pos,WidthSize=25):
+        List = ttk.Combobox(self.Window, values=ValuesList,width=WidthSize,height=23)
         List.place(x=X_Pos, y=Y_Pos, anchor='nw')
+        try:
+            List.set(ValuesList[0])
+        except:
+            pass
         return List
 
-    def Create_Button(self,Message,X_Pos,Y_Pos,Function=None):
-        Button = tk.Button(self.Window, text=Message,command=Function)
+    def Create_Button(self,Message,X_Pos,Y_Pos,Font = ('Arial',25),Function=None):
+        Button = tk.Button(self.Window, font= Font, text=Message, width=10, command=Function)
         Button.place(x=X_Pos, y=Y_Pos, anchor='nw')
         return Button
+    
+    def Create_Rectangle(self, x1, y1, x2, y2, outline='black', fill='', width=1):
+        self.canvas.create_rectangle(x1, y1, x2, y2, outline=outline, fill=fill, width=width)
+        self.canvas.pack()
 
 
+class SerialPortConnection:
+    def __init__(self, port, baudrate):
+        self.port = port
+        self.baudrate = baudrate
+        self.serial = None
+
+    def open_port(self):
+        #Needs to be improved
+        self.Port = Port_Combobox.get()
+        self.Baudrate = Baudrate_Combobox.get()
+
+        try:
+            self.serial = serial.Serial(self.port, self.baudrate)
+            print("Serial port opened successfully.")
+        except serial.SerialException as error:
+            print("Error opening serial port:", str(error))
+
+    def close_port(self):
+        if self.serial is not None and self.serial.is_open:
+            self.serial.close()
+            print("Serial port closed.")
+        else:
+            print('No hay comunicacion')
+ 
+    def Refresh_Ports(self):
+        # Clear the existing options in the port_combobox
+        Port_Combobox['values'] = ()
+
+        # Get the updated list of available ports
+        available_ports = self.get_available_ports()
+
+        # Set the new options in the port_combobox
+        Port_Combobox['values'] = available_ports
+        print('Refreshed')
+
+    @staticmethod
+    def get_available_ports():
+        ports = []
+        for port in serial.tools.list_ports.comports():
+            ports.append(port.device)
+        return ports
+    
 if __name__ == '__main__':
 
+   # Create an instance of the SerialPortConnection class
+    serial_connection = SerialPortConnection("", 9600)
+
     HMI = tk.Tk()
-    HMI.geometry("1200x765")
+    HMI.geometry("885x575")
     HMI.title("BingoGO")
     HMI.resizable(0,0) # this removes the maximize button
-
+    HMI.configure(bg='#444444')
     HMI.iconbitmap("Bingo_Icon.ico")
     
     # Adding combobox drop down list
@@ -39,47 +95,58 @@ if __name__ == '__main__':
 
     Widgets = GUI(HMI)
 
-    Widgets.Create_Label("START PLAYING!",108,20)
+    Widgets.Create_Label("START PLAYING!",108,20,'white',('Microsoft Sans Serif',28))
+
+    #Widgets.Create_Rectangle(30, 30, 30, 30, outline='white', fill='blue', width=1)
 
     #BINGO letters
-    Widgets.Create_Label("B",56,119,'#65A8E1',('Headline R',28))
-    Widgets.Create_Label("I",56,225,'#65A8E1',('Headline R',28))
-    Widgets.Create_Label("N",56,338,'#65A8E1',('Headline R',28))
-    Widgets.Create_Label("G",56,453,'#65A8E1',('Headline R',28))
-    Widgets.Create_Label("O",56,566,'#65A8E1',('Headline R',28))
+    Widgets.Create_Label("B",83,133,'#98FB98',('Microsoft Sans Serif',28,'bold'))
+    Widgets.Create_Label("I",83,211,'#FA8072',('Microsoft Sans Serif',28,'bold'))
+    Widgets.Create_Label("N",83,294,'#00BFFF',('Microsoft Sans Serif',28,'bold'))
+    Widgets.Create_Label("G",83,379,'#FFD700',('Microsoft Sans Serif',28,'bold'))
+    Widgets.Create_Label("O",83,462,'#DDA0DD',('Microsoft Sans Serif',28,'bold'))
 
+    
     #Type a number
-    Widgets.Create_Label("Type a number (1-15)" ,155,92)
-    Widgets.Create_Label("Type a number (16-30)",155,192)
-    Widgets.Create_Label("Type a number (31-45)",155,309)
-    Widgets.Create_Label("Type a number (46-60)",155,417)
-    Widgets.Create_Label("Type a number (61-75)",155,534)
+    Widgets.Create_Label("Type a number (1-15)" ,150,113,'white',('Cambria',10,'bold'))
+    Widgets.Create_Label("Type a number (16-30)",150,187,'white',('Cambria',10,'bold'))
+    Widgets.Create_Label("Type a number (31-45)",150,273,'white',('Cambria',10,'bold'))
+    Widgets.Create_Label("Type a number (46-60)",150,353,'white',('Cambria',10,'bold'))
+    Widgets.Create_Label("Type a number (61-75)",150,439,'white',('Cambria',10,'bold'))
+
 
     #ComboBox Bingo
-    B_Values = Widgets.Create_ComboBox(B_Values,150,131)
-    I_Values = Widgets.Create_ComboBox(I_Values,150,239)
-    N_Values = Widgets.Create_ComboBox(N_Values,150,352)
-    G_Values = Widgets.Create_ComboBox(G_Values,150,466)
-    O_Values = Widgets.Create_ComboBox(O_Values,150,582)
+    B_List = Widgets.Create_ComboBox(B_Values,160,142)
+    I_List = Widgets.Create_ComboBox(I_Values,160,221)
+    N_List = Widgets.Create_ComboBox(N_Values,160,305)
+    G_List = Widgets.Create_ComboBox(G_Values,160,389)
+    O_List = Widgets.Create_ComboBox(O_Values,160,474)
 
     #Buttons BINGO
-    Widgets.Create_Button("Enter",435,131)
-    Widgets.Create_Button("Enter",435,239)
-    Widgets.Create_Button("Enter",435,352)
-    Widgets.Create_Button("Enter",435,466)
-    Widgets.Create_Button("Enter",435,582)
+    Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'))
+    Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'))
+    Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'))
+    Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'))
+    Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'))
 
-    #Serial Comunication
-    Widgets.Create_Button("Open",38,192)
-    Widgets.Create_Button("Refresh",136,192)
-    Widgets.Create_Button("Close",233,192)
-    Widgets.Create_Label('Port',33,54)
-    Widgets.Create_Label('Baudrate',33,119)
 
-    BaudrateList = ('9600','38400','57600','115200')
-    PortList = ('0')
+    #Serial Comunication------------------------------------------------
+    Widgets.Create_Label('Port',553,54,'white',('Cambria',12,'bold'))
+    Widgets.Create_Label('Baudrate',553,119,'white',('Cambria',12,'bold'))
 
-    Widgets.Create_ComboBox(PortList,173,54)
-    Widgets.Create_ComboBox(BaudrateList,173,119)
+    # Get available ports
+    PortList = serial_connection.get_available_ports()
+    BaudrateList = (9600,38400,57600,115200)
+
+    Port_Combobox = Widgets.Create_ComboBox(PortList,675,54,15)
+    Baudrate_Combobox = Widgets.Create_ComboBox(BaudrateList,675,119,15)
+
+    x = 525
+    Widgets.Create_Button("Open",38+x,192,('Cambria',8,'bold'),serial_connection.open_port)
+    Widgets.Create_Button("Refresh",136+x,192,('Cambria',8,'bold'),serial_connection.Refresh_Ports)
+    Widgets.Create_Button("Close",233+x,192,('Cambria',8,'bold'),serial_connection.close_port)
+    
+    #Students
+    Widgets.Create_Label('Angélica Herrera - 1093629\nWisleiny Lara - 1090359',875,565,'white',('Cambria',12,'bold'),'right','se')
 
     HMI.mainloop()
