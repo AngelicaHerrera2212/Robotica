@@ -39,8 +39,8 @@ class SerialPortConnection:
         self.serial = None
 
     def open_port(self,Ports,Baudrates):
-        self.Port = Ports.get()
-        self.Baudrate = Baudrates.get()
+        self.port = Ports.get()
+        self.baudrate = int(Baudrates.get())
 
         try:
             self.serial = serial.Serial(self.port, self.baudrate)
