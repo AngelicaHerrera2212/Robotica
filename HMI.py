@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import serial
 import serial.tools.list_ports
-
+import cv2
 
 class GUI():
     def __init__(self,Window):
@@ -27,8 +27,8 @@ class GUI():
         Button.place(x=X_Pos, y=Y_Pos, anchor='nw')
         return Button
     
-    def Create_Rectangle(self, x1, y1, x2, y2, outline='black', fill='', width=1):
-        self.canvas.create_rectangle(x1, y1, x2, y2, outline=outline, fill=fill, width=width)
+    def Create_Rectangle(self, x1, y1, x2, y2, outline='black', width=1):
+        self.canvas.create_rectangle(x1, y1, x2, y2, outline=outline, fill=self.parent_bg, width=width)
         self.canvas.pack()
 
 
@@ -38,10 +38,9 @@ class SerialPortConnection:
         self.baudrate = baudrate
         self.serial = None
 
-    def open_port(self):
-        #Needs to be improved
-        self.Port = Port_Combobox.get()
-        self.Baudrate = Baudrate_Combobox.get()
+    def open_port(self,Ports,Baudrates):
+        self.Port = Ports.get()
+        self.Baudrate = Baudrates.get()
 
         try:
             self.serial = serial.Serial(self.port, self.baudrate)
@@ -54,7 +53,7 @@ class SerialPortConnection:
             self.serial.close()
             print("Serial port closed.")
         else:
-            print('No hay comunicacion')
+            print('There is no open communication.')
  
     def Refresh_Ports(self):
         # Clear the existing options in the port_combobox
@@ -67,12 +66,37 @@ class SerialPortConnection:
         Port_Combobox['values'] = available_ports
         print('Refreshed')
 
+    def SendMessage(self,Text):
+        Message = "<"+str(Text)+">"
+
+        if self.serial is not None and self.serial.is_open:
+            try:
+                self.serial.write(Message)
+                print(f"Message sent: {Message}")
+            except serial.SerialException as e:
+                print("Error sending message:", str(e))
+        else:
+            print('There is no open communication.')
+            print(Message)
+
     @staticmethod
     def get_available_ports():
         ports = []
         for port in serial.tools.list_ports.comports():
             ports.append(port.device)
         return ports
+    
+def image():
+    #The function cv2.imread() is used to read an image.
+    img_grayscale = cv2.imread('test.jpg')
+    
+    #The function cv2.imshow() is used to display an image in a window.
+    cv2.imshow('graycsale image',img_grayscale)
+    
+    #waitKey() waits for a key press to close the window and 0 specifies indefinite loop
+    #cv2.waitKey(0)
+    
+    #cv2.destroyAllWindows() simply destroys all the windows we created.
     
 if __name__ == '__main__':
 
@@ -97,7 +121,7 @@ if __name__ == '__main__':
 
     Widgets.Create_Label("START PLAYING!",108,20,'white',('Microsoft Sans Serif',28))
 
-    #Widgets.Create_Rectangle(30, 30, 30, 30, outline='white', fill='blue', width=1)
+    #Widgets.Create_Rectangle(30, 30, 30, 30, outline='white', width=1)
 
     #BINGO letters
     Widgets.Create_Label("B",83,133,'#98FB98',('Microsoft Sans Serif',28,'bold'))
@@ -123,12 +147,14 @@ if __name__ == '__main__':
     O_List = Widgets.Create_ComboBox(O_Values,160,474)
 
     #Buttons BINGO
-    Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'))
-    Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'))
-    Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'))
-    Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'))
-    Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'))
+    Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(B_List.get()))
+    Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(I_List.get()))
+    Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(N_List.get()))
+    Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(G_List.get()))
+    Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(O_List.get()))
 
+    #Widgets.Create_Button("Start!",625,300,('Cambria',15,'bold'),lambda : serial_connection.SendMessage("Start"))
+    Widgets.Create_Button("Start!",625,300,('Cambria',15,'bold'),image)
 
     #Serial Comunication------------------------------------------------
     Widgets.Create_Label('Port',553,54,'white',('Cambria',12,'bold'))
@@ -142,7 +168,7 @@ if __name__ == '__main__':
     Baudrate_Combobox = Widgets.Create_ComboBox(BaudrateList,675,119,15)
 
     x = 525
-    Widgets.Create_Button("Open",38+x,192,('Cambria',8,'bold'),serial_connection.open_port)
+    Widgets.Create_Button("Open",38+x,192,('Cambria',8,'bold'),lambda : serial_connection.open_port(Port_Combobox,Baudrate_Combobox))
     Widgets.Create_Button("Refresh",136+x,192,('Cambria',8,'bold'),serial_connection.Refresh_Ports)
     Widgets.Create_Button("Close",233+x,192,('Cambria',8,'bold'),serial_connection.close_port)
     
