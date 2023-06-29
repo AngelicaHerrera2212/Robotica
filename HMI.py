@@ -31,6 +31,14 @@ class GUI():
         self.canvas.create_rectangle(x1, y1, x2, y2, outline=outline, fill=self.parent_bg, width=width)
         self.canvas.pack()
 
+    def EnableWidgets(self,Widgets,Enable):
+        if type(Widgets) is list:
+            for Widget in Widgets:
+                print(Widget)
+                Widget["state"] = Enable
+        else:
+            Widgets["state"] = Enable
+
 
 class SerialPortConnection:
     def __init__(self, port, baudrate):
@@ -89,23 +97,24 @@ class SerialPortConnection:
         for port in serial.tools.list_ports.comports():
             ports.append(port.device)
         return ports
-    
-def image():
-    #The function cv2.imread() is used to read an image.
-    img_grayscale = cv2.imread('test.jpg')
-    
-    #The function cv2.imshow() is used to display an image in a window.
-    cv2.imshow('graycsale image',img_grayscale)
-    
-    #waitKey() waits for a key press to close the window and 0 specifies indefinite loop
-    #cv2.waitKey(0)
-    
-    #cv2.destroyAllWindows() simply destroys all the windows we created.
-    
-if __name__ == '__main__':
 
+class Camera():
+    def __init__(self,index=0):
+        self.Cap = cv2.VideoCapture(index)
+
+    def TakePic(self):
+        if self.Cap.isOpened():
+            ret,self.frame = self.Cap.read()
+            #self.Cap.release() #releasing camera immediately after capturing picture
+            if ret and self.frame is not None:
+                cv2.imwrite('Original.jpg', self.frame)
+                cv2.imshow('original', self.frame)
+        
+if __name__ == '__main__':
    # Create an instance of the SerialPortConnection class
     serial_connection = SerialPortConnection("", 9600)
+
+    Camera = Camera(0)
 
     HMI = tk.Tk()
     HMI.geometry("885x575")
@@ -151,14 +160,14 @@ if __name__ == '__main__':
     O_List = Widgets.Create_ComboBox(O_Values,160,474)
 
     #Buttons BINGO
-    Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(B_List.get()))
-    Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(I_List.get()))
-    Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(N_List.get()))
-    Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(G_List.get()))
-    Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(O_List.get()))
+    B_Button = Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(B_List.get()))
+    I_Button = Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(I_List.get()))
+    N_Button = Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(N_List.get()))
+    G_Button = Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(G_List.get()))
+    O_Button = Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(O_List.get()))
 
-    #Widgets.Create_Button("Start!",625,300,('Cambria',15,'bold'),lambda : serial_connection.SendMessage("Start"))
-    Widgets.Create_Button("Start!",625,300,('Cambria',15,'bold'),image)
+    Start_Button = Widgets.Create_Button("Start!",625,300,('Cambria',15,'bold'),lambda : serial_connection.SendMessage("Start"))
+    TakePic_Button = Widgets.Create_Button("Take Pic",625,350,('Cambria',15,'bold'),Camera.TakePic)
 
     #Serial Comunication------------------------------------------------
     Widgets.Create_Label('Port',553,54,'white',('Cambria',12,'bold'))
@@ -172,12 +181,18 @@ if __name__ == '__main__':
     Baudrate_Combobox = Widgets.Create_ComboBox(BaudrateList,675,119,15)
 
     x = 525
-    Widgets.Create_Button("Open",38+x,192,('Cambria',8,'bold'),lambda : serial_connection.open_port(Port_Combobox,Baudrate_Combobox))
-    Widgets.Create_Button("Refresh",136+x,192,('Cambria',8,'bold'),serial_connection.Refresh_Ports)
-    Widgets.Create_Button("Close",233+x,192,('Cambria',8,'bold'),serial_connection.close_port)
-    
+    Refresh_Button = Widgets.Create_Button("Refresh",136+x,192,('Cambria',8,'bold'),serial_connection.Refresh_Ports)
+    Close_Button = Widgets.Create_Button("Close",233+x,192,('Cambria',8,'bold'),serial_connection.close_port)
+    Open_Button = Widgets.Create_Button("Open",38+x,192,('Cambria',8,'bold'),lambda : serial_connection.open_port(Port_Combobox,Baudrate_Combobox))
+
     #Students
     Widgets.Create_Label('Angélica Herrera - 1093629\nWisleiny Lara - 1090359',875,565,'white',('Cambria',12,'bold'),'right','se')
+
+    WidgetsList = [B_List,I_List,N_List,G_List,O_List,
+               B_Button,I_Button,N_Button,G_Button,O_Button,
+               Start_Button,TakePic_Button]
+    
+    #Widgets.EnableWidgets(WidgetsList,"disabled")
 
     HMI.protocol("WM_DELETE_WINDOW",serial_connection.Close_Port_DestroyWindow)
     HMI.mainloop()
