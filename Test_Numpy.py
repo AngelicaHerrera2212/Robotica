@@ -47,14 +47,27 @@ WinList = {"V1":(0,1,2,3,4),
            "D1":(0,6,12,18,24),
            "D2":(4,8,12,16,20)}
 
-'''T = 5
-for i in Tables:
-    if i[0] == T:
-        RealTable = i 
+test = (1,12,16,8,20,55,21,7,7,8,3,5,4)
+Ilist = []
 
-try:
-    Valor = 31
-    Index = RealTable.index(Valor)
-    print(Index)
-except:
-    print(f"{Valor} no existe en la tabla")'''
+def PosTable(Input,Table):
+    try:
+        Position = Table.index(Input)
+        return Position
+    except:
+        pass
+
+def Win(x):
+    for Keys in WinList:
+        List = set(WinList[Keys])
+
+        if List.issubset(set(x)):
+            print(f'yes {Keys}')
+            print("Win!!!!!!!!!!!!!!!!!!!!!!!!!")
+        else:
+            print('no')
+
+while True:
+    Input = int(input('Favor añada un numero: '))
+    Ilist.append(PosTable(Input,Table1))
+    Win(Ilist)
