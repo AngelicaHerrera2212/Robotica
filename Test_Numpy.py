@@ -62,10 +62,7 @@ def Win(x):
         List = set(WinList[Keys])
 
         if List.issubset(set(x)):
-            print(f'yes {Keys}')
-            print("Win!!!!!!!!!!!!!!!!!!!!!!!!!")
-        else:
-            print('no')
+            print('Ganaste')
 
 while True:
     Input = int(input('Favor añada un numero: '))
