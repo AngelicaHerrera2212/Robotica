@@ -111,6 +111,10 @@ class Camera():
 
 class DetectMatrix():
     def __init__(self):
+        self.PositionList = []
+        self.Table = None
+        self.Win = False
+        
         Y = 0
 
         Table1 = (2,19,44,48,67,
@@ -145,10 +149,6 @@ class DetectMatrix():
 
         self.Tables = (Table1,Table2,Table3,Table4,Table5)
 
-        self.PositionList = []
-        self.Table = None
-        self.Win = False
-
         self.WinList = {"V1":(0,1,2,3,4),
                         "V2":(5,6,7,8,9),
                         "V3":(10,11,13,14),
@@ -177,6 +177,8 @@ class DetectMatrix():
             print(f"Key:{event.char}")
         elif event.char == '5':
             self.Table = self.Tables[4]
+            print(f"Key:{event.char}")
+        elif event.char == '0':
             print(f"Key:{event.char}")
 
     def PosTable(self,Input):
@@ -216,13 +218,12 @@ if __name__ == '__main__':
     HMI.resizable(0,0) # this removes the maximize button
     HMI.configure(bg='#444444')
     HMI.iconbitmap("Bingo_Icon.ico")
-    
-    def CheckWin(Input):
-        #print(f'check win {Input}')
-        if Input:
+
+    def CheckWin():
+        print(f'Check Win: {Matrix.Win}')
+        if Matrix.Win:
             serial_connection.SendMessage(60)
-            print('......................')
-        HMI.after(1000,lambda : CheckWin(Input))
+        HMI.after(1000,lambda : CheckWin())
 
     # Adding combobox drop down list
     B_Values = (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
@@ -295,8 +296,8 @@ if __name__ == '__main__':
     
     #Widgets.EnableWidgets(WidgetsList,"disabled")
 
-    CheckWin(Matrix.Win)
-    
+    CheckWin()
+
     HMI.bind('<Key>', Matrix.key_pressed)
     #HMI.protocol("WM_DELETE_WINDOW",lambda : [serial_connection.Close_Port_DestroyWindow, Camera.Cap.release()])
     HMI.protocol("WM_DELETE_WINDOW",serial_connection.Close_Port_DestroyWindow)
