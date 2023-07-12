@@ -31,13 +31,12 @@ class GUI():
         self.canvas.create_rectangle(x1, y1, x2, y2, outline=outline, fill=self.parent_bg, width=width)
         self.canvas.pack()
 
-    def EnableWidgets(self,Widgets,Enable):
+    def EnableWidgets(self,Widgets,Enable_Disable):
         if type(Widgets) is list:
             for Widget in Widgets:
-                print(Widget)
-                Widget["state"] = Enable
+                Widget["state"] = Enable_Disable
         else:
-            Widgets["state"] = Enable
+            Widgets["state"] = Enable_Disable
 
 
 class SerialPortConnection:
@@ -79,7 +78,7 @@ class SerialPortConnection:
 
         if self.serial is not None and self.serial.is_open:
             try:
-                self.serial.write(Message)
+                self.serial.write(Message.encode())
                 print(f"Message sent: {Message}")
             except serial.SerialException as e:
                 print("Error sending message:", str(e))
@@ -109,12 +108,103 @@ class Camera():
             if ret and self.frame is not None:
                 cv2.imwrite('Original.jpg', self.frame)
                 cv2.imshow('original', self.frame)
+
+class DetectMatrix():
+    def __init__(self):
+        Y = 0
+
+        Table1 = (2,19,44,48,67,
+                15,23,39,54,70,
+                8,29,Y,46,69,
+                12,27,42,50,72,
+                6,21,37,55,75)
+
+        Table2 = (9,28,32,57,71,
+                7,26,34,50,74,
+                3,22,Y,47,70,
+                11,21,43,51,75,
+                4,19,35,53,61)
+
+        Table3 = (1,16,33,56,62,
+                4,29,40,46,75,
+                13,17,Y,58,66,
+                10,25,36,60,64,
+                2,18,44,57,72)
+
+        Table4 = (3,20,36,49,64,
+                8,18,43,52,71,
+                9,24,Y,57,68,
+                14,17,38,48,73,
+                1,29,41,59,70)
+
+        Table5 = (5,17,31,50,73,
+                9,21,44,48,63,
+                1,28,Y,59,74,
+                13,20,37,52,66,
+                8,16,32,46,71)
+
+        self.Tables = (Table1,Table2,Table3,Table4,Table5)
+
+        self.PositionList = []
+        self.Table = None
+
+        self.WinList = {"V1":(0,1,2,3,4),
+                        "V2":(5,6,7,8,9),
+                        "V3":(10,11,12,13,14),
+                        "V4":(15,16,17,18,19),
+                        "V5":(20,21,22,23,24),
+                        "H1":(0,5,10,15,20),
+                        "H2":(1,6,11,16,21),
+                        "H3":(2,7,12,17,22),
+                        "H4":(3,8,13,18,23),
+                        "H5":(4,9,14,19,24),
+                        "D1":(0,6,12,18,24),
+                        "D2":(4,8,12,16,20)}
+
+    def key_pressed(self,event):
+        if event.char == '2':
+            self.Table = self.Tables[0]
+            print(f"Key:{event.char}")
+        elif event.char == '9':
+            self.Table = self.Tables[1]
+            print(f"Key:{event.char}")
+        elif event.char == '1':
+            self.Table = self.Tables[2]
+            print(f"Key:{event.char}")
+        elif event.char == '3':
+            self.Table = self.Tables[3]
+            print(f"Key:{event.char}")
+        elif event.char == '5':
+            self.Table = self.Tables[4]
+            print(f"Key:{event.char}")
+
+    def PosTable(self,Input):
+        if self.Table is not None:
+            if type(Input) == str: 
+                Input = int(Input)
+
+            try:
+                Position = self.Table.index(Input)
+                self.PositionList.append(Position)
+                print(self.PositionList)
+                self.Win()
+            except:
+                print('not in table')
+                pass
         
+    def Win(self):
+        for Keys in self.WinList:
+            List = set(self.WinList[Keys])
+
+            if List.issubset(set(self.PositionList)):
+                print('Ganaste!')
+
 if __name__ == '__main__':
    # Create an instance of the SerialPortConnection class
     serial_connection = SerialPortConnection("", 9600)
 
     Camera = Camera(0)
+    Matrix = DetectMatrix()
 
     HMI = tk.Tk()
     HMI.geometry("885x575")
@@ -160,11 +250,11 @@ if __name__ == '__main__':
     O_List = Widgets.Create_ComboBox(O_Values,160,474)
 
     #Buttons BINGO
-    B_Button = Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(B_List.get()))
-    I_Button = Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(I_List.get()))
-    N_Button = Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(N_List.get()))
-    G_Button = Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(G_List.get()))
-    O_Button = Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(O_List.get()))
+    B_Button = Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(B_List.get()), Matrix.PosTable(B_List.get())])
+    I_Button = Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(I_List.get()), Matrix.PosTable(I_List.get())])
+    N_Button = Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(N_List.get()), Matrix.PosTable(N_List.get())])
+    G_Button = Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(G_List.get()), Matrix.PosTable(G_List.get())])
+    O_Button = Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(O_List.get()), Matrix.PosTable(O_List.get())])
 
     Start_Button = Widgets.Create_Button("Start!",625,300,('Cambria',15,'bold'),lambda : serial_connection.SendMessage("Start"))
     TakePic_Button = Widgets.Create_Button("Take Pic",625,350,('Cambria',15,'bold'),Camera.TakePic)
@@ -194,5 +284,7 @@ if __name__ == '__main__':
     
     #Widgets.EnableWidgets(WidgetsList,"disabled")
 
+    HMI.bind('<Key>', Matrix.key_pressed)
+    #HMI.protocol("WM_DELETE_WINDOW",lambda : [serial_connection.Close_Port_DestroyWindow, Camera.Cap.release()])
     HMI.protocol("WM_DELETE_WINDOW",serial_connection.Close_Port_DestroyWindow)
     HMI.mainloop()
