@@ -147,19 +147,20 @@ class DetectMatrix():
 
         self.PositionList = []
         self.Table = None
+        self.Win = False
 
         self.WinList = {"V1":(0,1,2,3,4),
                         "V2":(5,6,7,8,9),
-                        "V3":(10,11,12,13,14),
+                        "V3":(10,11,13,14),
                         "V4":(15,16,17,18,19),
                         "V5":(20,21,22,23,24),
                         "H1":(0,5,10,15,20),
                         "H2":(1,6,11,16,21),
-                        "H3":(2,7,12,17,22),
+                        "H3":(2,7,17,22),
                         "H4":(3,8,13,18,23),
                         "H5":(4,9,14,19,24),
-                        "D1":(0,6,12,18,24),
-                        "D2":(4,8,12,16,20)}
+                        "D1":(0,6,18,24),
+                        "D2":(4,8,16,20)}
 
     def key_pressed(self,event):
         if event.char == '2':
@@ -187,16 +188,19 @@ class DetectMatrix():
                 Position = self.Table.index(Input)
                 self.PositionList.append(Position)
                 print(self.PositionList)
-                self.Win()
+                self.CheckWin()
             except:
                 print('not in table')
-                pass
+                Position = 30
+
+            return Position
         
-    def Win(self):
+    def CheckWin(self):
         for Keys in self.WinList:
             List = set(self.WinList[Keys])
 
             if List.issubset(set(self.PositionList)):
+                self.Win = True
                 print('Ganaste!')
 
 if __name__ == '__main__':
@@ -213,6 +217,13 @@ if __name__ == '__main__':
     HMI.configure(bg='#444444')
     HMI.iconbitmap("Bingo_Icon.ico")
     
+    def CheckWin(Input):
+        #print(f'check win {Input}')
+        if Input:
+            serial_connection.SendMessage(60)
+            print('......................')
+        HMI.after(1000,lambda : CheckWin(Input))
+
     # Adding combobox drop down list
     B_Values = (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
     I_Values = (16,17,18,19,20,21,22,23,24,25,26,27,28,29,30)
@@ -250,14 +261,14 @@ if __name__ == '__main__':
     O_List = Widgets.Create_ComboBox(O_Values,160,474)
 
     #Buttons BINGO
-    B_Button = Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(B_List.get()), Matrix.PosTable(B_List.get())])
-    I_Button = Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(I_List.get()), Matrix.PosTable(I_List.get())])
-    N_Button = Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(N_List.get()), Matrix.PosTable(N_List.get())])
-    G_Button = Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(G_List.get()), Matrix.PosTable(G_List.get())])
-    O_Button = Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'),lambda : [serial_connection.SendMessage(O_List.get()), Matrix.PosTable(O_List.get())])
+    B_Button = Widgets.Create_Button("Enter",350,142,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(Matrix.PosTable(B_List.get())))
+    I_Button = Widgets.Create_Button("Enter",350,221,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(Matrix.PosTable(I_List.get())))
+    N_Button = Widgets.Create_Button("Enter",350,305,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(Matrix.PosTable(N_List.get())))
+    G_Button = Widgets.Create_Button("Enter",350,389,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(Matrix.PosTable(G_List.get())))
+    O_Button = Widgets.Create_Button("Enter",350,474,('Cambria',8,'bold'),lambda : serial_connection.SendMessage(Matrix.PosTable(O_List.get())))
 
-    Start_Button = Widgets.Create_Button("Start!",625,300,('Cambria',15,'bold'),lambda : serial_connection.SendMessage("Start"))
-    TakePic_Button = Widgets.Create_Button("Take Pic",625,350,('Cambria',15,'bold'),Camera.TakePic)
+    Start_Button = Widgets.Create_Button("Start!",625,300,('Cambria',15,'bold'),lambda : serial_connection.SendMessage(40))
+    TakePic_Button = Widgets.Create_Button("Take Pic",625,350,('Cambria',15,'bold'),lambda : [Camera.TakePic(), serial_connection.SendMessage(50)])
 
     #Serial Comunication------------------------------------------------
     Widgets.Create_Label('Port',553,54,'white',('Cambria',12,'bold'))
@@ -284,6 +295,8 @@ if __name__ == '__main__':
     
     #Widgets.EnableWidgets(WidgetsList,"disabled")
 
+    CheckWin(Matrix.Win)
+    
     HMI.bind('<Key>', Matrix.key_pressed)
     #HMI.protocol("WM_DELETE_WINDOW",lambda : [serial_connection.Close_Port_DestroyWindow, Camera.Cap.release()])
     HMI.protocol("WM_DELETE_WINDOW",serial_connection.Close_Port_DestroyWindow)
