@@ -3,6 +3,7 @@ from tkinter import ttk
 import serial
 import serial.tools.list_ports
 import cv2
+import time
 
 class GUI():
     def __init__(self,Window):
@@ -51,6 +52,7 @@ class SerialPortConnection:
 
         try:
             self.serial = serial.Serial(self.port, self.baudrate)
+            time.sleep(2)
             print("Serial port opened successfully.")
         except serial.SerialException as error:
             print("Error opening serial port:", str(error))
@@ -74,17 +76,20 @@ class SerialPortConnection:
         print('Refreshed')
 
     def SendMessage(self,Text):
-        Message = "<"+str(Text)+">"
+        if Text is not None:
+            Message = "<"+str(Text)+">"
 
-        if self.serial is not None and self.serial.is_open:
-            try:
-                self.serial.write(Message.encode())
-                print(f"Message sent: {Message}")
-            except serial.SerialException as e:
-                print("Error sending message:", str(e))
+            if self.serial is not None and self.serial.is_open:
+                try:
+                    self.serial.write(Message.encode())
+                    print(f"Message sent: {Message}")
+                except serial.SerialException as e:
+                    print("Error sending message:", str(e))
+            else:
+                print('There is no open communication.')
+                print(Message)
         else:
-            print('There is no open communication.')
-            print(Message)
+            print('Please select M# first')
     
     def Close_Port_DestroyWindow(self):
         self.close_port()
@@ -188,9 +193,13 @@ class DetectMatrix():
 
             try:
                 Position = self.Table.index(Input)
-                self.PositionList.append(Position)
-                print(self.PositionList)
-                self.CheckWin()
+                if Position not in self.PositionList:
+                    self.PositionList.append(Position)
+                    print(self.PositionList)
+                    self.CheckWin()
+                else:
+                    print('Number Repeat')
+                    Position = 30
             except:
                 print('not in table')
                 Position = 30
